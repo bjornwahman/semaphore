@@ -3,14 +3,20 @@
   hosts: linux_servers
   become: true
   tasks:
-    - name: Ta bort befintlig crafty-installer katalog om den finns
+    - name: Ta bort befintlig crafty-installer katalog
       file:
         path: /tmp/crafty-installer-4.0
         state: absent
-      ignore_errors: yes
 
-    - name: Klona och installera Crafty Controller
-      shell: "cd /tmp && git clone https://gitlab.com/crafty-controller/crafty-installer-4.0.git && cd crafty-installer-4.0 && ./install_crafty.sh <<< $'y\ny\ny\nmaster\ny'"
+    - name: Klona crafty installer
+      git:
+        repo: https://gitlab.com/crafty-controller/crafty-installer-4.0.git
+        dest: /tmp/crafty-installer-4.0
+        clone: yes
+        force: yes
+
+    - name: Installera Crafty Controller
+      shell: "cd /tmp/crafty-installer-4.0 && ./install_crafty.sh <<< $'y\ny\ny\nmaster\ny'"
       args:
         executable: /bin/bash
       changed_when: false
@@ -20,6 +26,22 @@
       pause:
         seconds: 30
       when: crafty_installation is changed
+
+    - name: Aktivera och starta Crafty service
+      systemd:
+        name: crafty.service
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
+    - name: Kontrollera status på Crafty service
+      systemd:
+        name: crafty.service
+      register: crafty_service_status
+
+    - name: Visa Crafty service status
+      debug:
+        msg: "Crafty service status: {{ crafty_service_status.status }}"
 
     - name: Kontrollera om credentials-filen finns
       stat:
