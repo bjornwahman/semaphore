@@ -19,12 +19,12 @@
       shell: |
         cd /tmp/crafty-installer-4.0
         ./install_crafty.sh <<EOF
-y
-y
-y
-master
-y
-EOF
+        y
+        y
+        y
+        master
+        y
+        EOF
       args:
         executable: /bin/bash
       timeout: 600
