@@ -15,37 +15,28 @@
         clone: yes
         force: yes
 
-    - name: Installera Crafty Controller med direkt output
-      shell: "cd /tmp/crafty-installer-4.0 && ./install_crafty.sh <<EOF 2>&1
-y
-y
-y
-master
-y
-EOF"
+    - name: Installera Crafty Controller med detaljerad output
+      shell: |
+        cd /tmp/crafty-installer-4.0
+        {
+          echo "=== START INSTALLATION ==="
+          ./install_crafty.sh
+          echo "=== EXIT CODE: $? ==="
+        } <<EOF
+        y
+        y
+        y
+        master
+        y
+        EOF
       args:
         executable: /bin/bash
-      register: install_result
+      register: install_output
 
-    - name: Visa HELA output från installationen
+    - name: Visa all output från installationen
       debug:
-        var: install_result
-
-    - name: Visa exit code
-      debug:
-        msg: "Installation exit code: {{ install_result.rc }}"
-      when: install_result.rc is defined
-
-    - name: Felsök om installationen misslyckades
-      debug:
-        msg: "Installationen misslyckades med exit code {{ install_result.rc }}. Kolla ovanstående output för detaljer."
-      when: install_result.rc != 0
-
-    - name: Fortsätt bara om installationen lyckades
-      block:
-        - name: Vänta på att installationen ska slutföras
-          pause:
-            seconds: 30
+        msg: "{{ item }}"
+      loop: "{{ install_output.stdout_lines }}"
 
         - name: Aktivera och starta Crafty service
           systemd:
