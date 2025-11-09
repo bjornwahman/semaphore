@@ -15,17 +15,19 @@
         clone: yes
         force: yes
 
-    - name: Installera Crafty Controller med expect
-      expect:
-        command: ./install_crafty.sh
-        chdir: /tmp/crafty-installer-4.0
-        responses:
-          '(?i)proceed': 'y'
-          '(?i)default directory': 'y'
-          '(?i)create.*user': 'y'
-          '(?i)branch': 'master'
-          '(?i)start crafty': 'y'
-        timeout: 300
+    - name: Installera Crafty Controller
+      shell: |
+        cd /tmp/crafty-installer-4.0
+        ./install_crafty.sh <<EOF
+y
+y
+y
+master
+y
+EOF
+      args:
+        executable: /bin/bash
+      timeout: 600
       register: install_result
 
     - name: Visa installationsresultat
@@ -38,28 +40,32 @@
         enabled: yes
         state: started
         daemon_reload: yes
+      when: install_result.rc == 0
 
     - name: Kontrollera status på Crafty service
       systemd:
         name: crafty.service
       register: crafty_service_status
+      when: install_result.rc == 0
 
     - name: Visa Crafty service status
       debug:
         msg: "Crafty service status: {{ crafty_service_status.status }}"
+      when: install_result.rc == 0
 
     - name: Kontrollera om credentials-filen finns
       stat:
         path: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
       register: creds_file
+      when: install_result.rc == 0
 
     - name: Läsa Crafty default credentials
       slurp:
         src: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
       register: crafty_creds
-      when: creds_file.stat.exists
+      when: creds_file.stat.exists and install_result.rc == 0
 
     - name: Visa Crafty credentials
       debug:
         msg: "Crafty Default Credentials:\n{{ crafty_creds.content | b64decode }}"
-      when: creds_file.stat.exists
+      when: creds_file.stat.exists and install_result.rc == 0
