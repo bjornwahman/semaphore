@@ -1,6 +1,7 @@
 ---
 - hosts: linux_servers
   become: true
-- name: "Shell command Crafty"
-  shell: 
-    cmd: "cd /tmp && git clone https://gitlab.com/crafty-controller/crafty-installer-linux.git && cd crafty-installer-linux && sudo ./install_crafty.sh"
+  tasks:
+    - name: "Shell command Crafty"
+      shell: 
+        cmd: "cd /tmp && git clone https://gitlab.com/crafty-controller/crafty-installer-linux.git && cd crafty-installer-linux && sudo ./install_crafty.sh"
