@@ -19,7 +19,7 @@
       shell: "cd /tmp/crafty-installer-4.0 && sudo ./install_crafty.sh <<< $'y\ny\ny\nmaster\ny'"
       args:
         executable: /bin/bash
-      timeout: 600
+      timeout: 100
       register: install_result
 
     - name: Visa installationsresultat
