@@ -3,22 +3,36 @@
   hosts: linux_servers
   become: true
   tasks:
+    - name: Ta bort befintlig crafty-installer katalog om den finns
+      file:
+        path: /tmp/crafty-installer-4.0
+        state: absent
+      ignore_errors: yes
+
     - name: Klona och installera Crafty Controller
       shell: "cd /tmp && git clone https://gitlab.com/crafty-controller/crafty-installer-4.0.git && cd crafty-installer-4.0 && ./install_crafty.sh <<< $'y\ny\ny\nmaster\ny'"
       args:
         executable: /bin/bash
       changed_when: false
+      register: crafty_installation
 
     - name: Vänta på att installationen ska slutföras
       pause:
         seconds: 30
-      when: crafty_installation.changed
+      when: crafty_installation is changed
+
+    - name: Kontrollera om credentials-filen finns
+      stat:
+        path: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
+      register: creds_file
 
     - name: Läsa Crafty default credentials
       slurp:
         src: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
       register: crafty_creds
+      when: creds_file.stat.exists
 
     - name: Visa Crafty credentials
       debug:
         msg: "Crafty Default Credentials:\n{{ crafty_creds.content | b64decode }}"
+      when: creds_file.stat.exists
