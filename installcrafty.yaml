@@ -18,7 +18,7 @@
     - name: Installera Crafty Controller
       shell: |
         cd /tmp/crafty-installer-4.0
-        ./install_crafty.sh <<EOF
+        sudo ./install_crafty.sh <<EOF
         y
         y
         y
