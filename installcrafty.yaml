@@ -4,17 +4,7 @@
   become: true
   tasks:
     - name: Klona och installera Crafty Controller
-      shell: |
-        cd /tmp && 
-        git clone https://gitlab.com/crafty-controller/crafty-installer-4.0.git && 
-        cd crafty-installer-4.0 && 
-        ./install_crafty.sh <<EOF
-        y
-        y
-        y
-        master
-        y
-        EOF
+      shell: "cd /tmp && git clone https://gitlab.com/crafty-controller/crafty-installer-4.0.git && cd crafty-installer-4.0 && ./install_crafty.sh <<< $'y\ny\ny\nmaster\ny'"
       args:
         executable: /bin/bash
       changed_when: false
