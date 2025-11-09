@@ -16,15 +16,7 @@
         force: yes
 
     - name: Installera Crafty Controller
-      shell: |
-        cd /tmp/crafty-installer-4.0
-        sudo ./install_crafty.sh <<EOF
-        y
-        y
-        y
-        master
-        y
-        EOF
+      shell: "cd /tmp/crafty-installer-4.0 && sudo ./install_crafty.sh <<< $'y\ny\ny\nmaster\ny'"
       args:
         executable: /bin/bash
       timeout: 600
