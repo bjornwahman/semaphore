@@ -15,46 +15,67 @@
         clone: yes
         force: yes
 
-    - name: Installera Crafty Controller
-      shell: "cd /tmp/crafty-installer-4.0 && ./install_crafty.sh <<< $'y\ny\ny\nmaster\ny'"
+    - name: Installera Crafty Controller med direkt output
+      shell: "cd /tmp/crafty-installer-4.0 && ./install_crafty.sh <<EOF 2>&1
+y
+y
+y
+master
+y
+EOF"
       args:
         executable: /bin/bash
-      changed_when: false
-      register: crafty_installation
+      register: install_result
 
-    - name: Vänta på att installationen ska slutföras
-      pause:
-        seconds: 30
-      when: crafty_installation is changed
-
-    - name: Aktivera och starta Crafty service
-      systemd:
-        name: crafty.service
-        enabled: yes
-        state: started
-        daemon_reload: yes
-
-    - name: Kontrollera status på Crafty service
-      systemd:
-        name: crafty.service
-      register: crafty_service_status
-
-    - name: Visa Crafty service status
+    - name: Visa HELA output från installationen
       debug:
-        msg: "Crafty service status: {{ crafty_service_status.status }}"
+        var: install_result
 
-    - name: Kontrollera om credentials-filen finns
-      stat:
-        path: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
-      register: creds_file
-
-    - name: Läsa Crafty default credentials
-      slurp:
-        src: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
-      register: crafty_creds
-      when: creds_file.stat.exists
-
-    - name: Visa Crafty credentials
+    - name: Visa exit code
       debug:
-        msg: "Crafty Default Credentials:\n{{ crafty_creds.content | b64decode }}"
-      when: creds_file.stat.exists
+        msg: "Installation exit code: {{ install_result.rc }}"
+      when: install_result.rc is defined
+
+    - name: Felsök om installationen misslyckades
+      debug:
+        msg: "Installationen misslyckades med exit code {{ install_result.rc }}. Kolla ovanstående output för detaljer."
+      when: install_result.rc != 0
+
+    - name: Fortsätt bara om installationen lyckades
+      block:
+        - name: Vänta på att installationen ska slutföras
+          pause:
+            seconds: 30
+
+        - name: Aktivera och starta Crafty service
+          systemd:
+            name: crafty.service
+            enabled: yes
+            state: started
+            daemon_reload: yes
+
+        - name: Kontrollera status på Crafty service
+          systemd:
+            name: crafty.service
+          register: crafty_service_status
+
+        - name: Visa Crafty service status
+          debug:
+            msg: "Crafty service status: {{ crafty_service_status.status }}"
+
+        - name: Kontrollera om credentials-filen finns
+          stat:
+            path: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
+          register: creds_file
+
+        - name: Läsa Crafty default credentials
+          slurp:
+            src: /var/opt/minecraft/crafty/crafty-4/app/config/default-creds.txt
+          register: crafty_creds
+          when: creds_file.stat.exists
+
+        - name: Visa Crafty credentials
+          debug:
+            msg: "Crafty Default Credentials:\n{{ crafty_creds.content | b64decode }}"
+          when: creds_file.stat.exists
+      when: install_result.rc == 0
