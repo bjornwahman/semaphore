@@ -13,7 +13,7 @@
     # VM configuration
     vm_name: "ubuntu-vm-01"
     vm_id: 9999
-    template_vm_id: 9000  # <--- BYTT TILL 9000 (vanligt template ID)
+    template_vm_id: 9000  # Prova detta ID
     target_node: "pve"
     
     # Resource allocation
@@ -36,7 +36,7 @@
         api_password: "{{ proxmox_password }}"
         validate_certs: "{{ validate_certs }}"
         node: "{{ target_node }}"
-        state: list
+        state: current  # <--- BYTT FRÅN "list" TILL "current"
       register: all_vms
       
     - name: Display available VMs and templates
