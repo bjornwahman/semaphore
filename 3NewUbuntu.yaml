@@ -1,34 +1,36 @@
 ---
 - name: Create multiple Ubuntu VMs from inventory
-  hosts: ubuntu_vms
+  hosts: localhost  # <--- BYT TILL localhost
   connection: local
   gather_facts: false
   
   tasks:
-    - name: Display VM configuration
-      debug:
-        msg: "Creating {{ vm_name }} with ID {{ vm_id }}, {{ memory }}MB, {{ cores }} cores from template {{ template_id }}"
-
-    - name: Create VM from template
+    - name: Create VMs one by one
       community.general.proxmox_kvm:
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
         api_host: "{{ proxmox_host }}"
-        clone: "{{ template_id }}"  # <--- ANVÄNDER template_id VARIABELN
-        vmid: "{{ template_id }}"   # <--- SAMA HÄR
-        newid: "{{ vm_id }}"
+        clone: "{{ template_id }}"
+        vmid: "{{ template_id }}"
+        newid: "{{ item.vm_id }}"
         full: yes
-        name: "{{ vm_name }}"
+        name: "{{ item.vm_name }}"
         node: pve
         storage: local-lvm
         format: qcow2
-        memory: "{{ memory }}"
-        cores: "{{ cores }}"
+        memory: "{{ item.memory }}"
+        cores: "{{ item.cores }}"
+        timeout: 600
+      loop: "{{ groups['ubuntu_vms'] | map('extract', hostvars, ['vm_id', 'vm_name', 'memory', 'cores']) | list }}"
+      loop_control:
+        label: "{{ item.vm_name }}"
+      register: clone_results
 
-    - name: Start VM
+    - name: Start all VMs
       community.general.proxmox_kvm:
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
         api_host: "{{ proxmox_host }}"
-        vmid: "{{ vm_id }}"
+        vmid: "{{ item.vm_id }}"
         state: started
+      loop: "{{ groups['ubuntu_vms'] | map('extract', hostvars, 'vm_id') | list }}"
