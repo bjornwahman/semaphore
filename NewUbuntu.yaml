@@ -24,5 +24,5 @@
         api_user: "{{ SEMAPHORE_PROXMOX_USER }}"
         api_password: "{{ SEMAPHORE_PROXMOX_PASSWORD }}"
         api_host: "{{ SEMAPHORE_PROXMOX_HOST }}"
-        vmid: 9999
+        vmid: 200
         state: started
