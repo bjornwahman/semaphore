@@ -12,8 +12,8 @@
     
     # VM configuration
     vm_name: "ubuntu-vm-01"
-    vm_id: 9999  # <--- BYTT FRÅN 106 TILL 9999
-    template_vm_id: 105
+    vm_id: 9999
+    template_vm_id: 9000  # <--- BYTT TILL 9000 (vanligt template ID)
     target_node: "pve"
     
     # Resource allocation
@@ -24,11 +24,24 @@
     # Network
     network_bridge: "vmbr0"
     
-    
   tasks:
     - name: Display which user is being used
       debug:
         msg: "Using Proxmox user: {{ proxmox_user }}"
+    
+    - name: List all VMs to find available templates
+      community.general.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        validate_certs: "{{ validate_certs }}"
+        node: "{{ target_node }}"
+        state: list
+      register: all_vms
+      
+    - name: Display available VMs and templates
+      debug:
+        msg: "Available VMs: {{ all_vms.vms }}"
         
     - name: Create Ubuntu VM by cloning template
       community.general.proxmox_kvm:
