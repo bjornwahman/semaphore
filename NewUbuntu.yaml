@@ -1,49 +1,28 @@
 ---
-- name: Create Ubuntu VM from template in Proxmox
+- name: Create VM from template using internet example
   hosts: localhost
   connection: local
   gather_facts: false
-  vars:
-    proxmox_host: "{{ SEMAPHORE_PROXMOX_HOST }}" 
-    proxmox_user: "{{ SEMAPHORE_PROXMOX_USER }}"
-    proxmox_password: "{{ SEMAPHORE_PROXMOX_PASSWORD }}"
-    validate_certs: false
-    
+  
   tasks:
-    - name: Clone template 105 to new VM
+    - name: Clone template to new VM
       community.general.proxmox_kvm:
-        api_host: "{{ proxmox_host }}"
-        api_user: "{{ proxmox_user }}"
-        api_password: "{{ proxmox_password }}"
-        validate_certs: "{{ validate_certs }}"
-        
-        node: "pve"
-        vmid: 9999
-        clone: 109
-        name: "ubuntu-test-ansible"
+        api_user: "{{ SEMAPHORE_PROXMOX_USER }}"
+        api_password: "{{ SEMAPHORE_PROXMOX_PASSWORD }}"
+        api_host: "{{ SEMAPHORE_PROXMOX_HOST }}"
+        clone: 109  # Din template
+        vmid: 109   # Käll-VM ID
+        newid: 200 # Nytt VM ID
         full: yes
-        state: present  # <--- BYTT FRÅN "started" TILL "present"
-        
-      register: clone_result
+        name: "test1"  # Namn på nya VM
+        node: pve
+        storage: local-lvm
+        format: qcow2
 
-    - name: Display clone result
-      debug:
-        var: clone_result
-
-    - name: Start the cloned VM
+    - name: Start the new VM
       community.general.proxmox_kvm:
-        api_host: "{{ proxmox_host }}"
-        api_user: "{{ proxmox_user }}"
-        api_password: "{{ proxmox_password }}"
-        validate_certs: "{{ validate_certs }}"
-        
-        node: "pve"
+        api_user: "{{ SEMAPHORE_PROXMOX_USER }}"
+        api_password: "{{ SEMAPHORE_PROXMOX_PASSWORD }}"
+        api_host: "{{ SEMAPHORE_PROXMOX_HOST }}"
         vmid: 9999
         state: started
-        
-      register: start_result
-      when: clone_result is succeeded
-
-    - name: Display start result
-      debug:
-        var: start_result
