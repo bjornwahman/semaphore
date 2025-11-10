@@ -1,43 +1,52 @@
 ---
 - name: Create multiple Ubuntu VMs from inventory
-  hosts: ubuntu_vms
+  hosts: localhost  # Kör allt på localhost
   connection: local
   gather_facts: false
   
-  tasks:
-    - name: Display VM configuration
-      debug:
-        msg: "Creating {{ vm_name }} with ID {{ vm_id }}, {{ memory }}MB, {{ cores }} cores from template {{ template_id }}"
+  vars:
+    vm_list:
+      - name: "ubuntu1"
+        id: 201
+        memory: 2048
+        cores: 2
+      - name: "ubuntu2"
+        id: 202
+        memory: 2048
+        cores: 2
+      - name: "ubuntu2"
+        id: 203
+        memory: 2048
+        cores: 2
 
-    - name: Create VM from template
+  tasks:
+    - name: Create VMs one by one
       community.general.proxmox_kvm:
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
         api_host: "{{ proxmox_host }}"
         clone: "{{ template_id }}"
         vmid: "{{ template_id }}"
-        newid: "{{ vm_id }}"
+        newid: "{{ item.id }}"
         full: yes
-        name: "{{ vm_name }}"
+        name: "{{ item.name }}"
         node: pve
         storage: local-lvm
         format: qcow2
-        memory: "{{ memory }}"
-        cores: "{{ cores }}"
-        timeout: 600  # <--- LÄGG TILL TIMEOUT PÅ 10 MINUTER
-      register: clone_result
-      async: 900     # <--- ASYNC TIMEOUT 15 MINUTER
-      poll: 10       # <--- POLLA VAR 10:E SEKUND
+        memory: "{{ item.memory }}"
+        cores: "{{ item.cores }}"
+        timeout: 600  # 10 minuter timeout
+      loop: "{{ vm_list }}"
+      loop_control:
+        label: "{{ item.name }}"
 
-    - name: Display clone result
-      debug:
-        var: clone_result
-
-    - name: Start VM
+    - name: Start all VMs
       community.general.proxmox_kvm:
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
         api_host: "{{ proxmox_host }}"
-        vmid: "{{ vm_id }}"
+        vmid: "{{ item.id }}"
         state: started
-      when: clone_result is succeeded
+      loop: "{{ vm_list }}"
+      loop_control:
+        label: "Starting {{ item.name }}"
