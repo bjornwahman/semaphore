@@ -19,7 +19,7 @@
         
         node: "pve"
         vmid: 9999
-        clone: 105
+        clone: 109
         name: "ubuntu-test-ansible"
         full: yes
         state: present  # <--- BYTT FRÅN "started" TILL "present"
