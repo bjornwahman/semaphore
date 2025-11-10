@@ -14,7 +14,7 @@
         id: 202
         memory: 2048
         cores: 2
-      - name: "ubuntu2"
+      - name: "ubuntu3"
         id: 203
         memory: 2048
         cores: 2
