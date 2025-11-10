@@ -12,8 +12,8 @@
     
     # VM configuration
     vm_name: "ubuntu-vm-01"
-    vm_id: 9999
-    template_vm_id: 9000  # Prova detta ID först
+    vm_id: 110
+    template_vm_id: 105
     target_node: "pve"
     
     # Resource allocation
