@@ -1,6 +1,7 @@
 ---
 - name: Create Ubuntu VM from template in Proxmox
   hosts: localhost
+  connection: local
   gather_facts: false
   vars:
     # Proxmox connection settings - user comes from Semaphore
