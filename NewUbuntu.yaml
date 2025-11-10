@@ -43,8 +43,6 @@
         full: true
         memory: "{{ memory_mb }}"
         cores: "{{ cores }}"
-        ciuser: "{{ ci_user }}"
-        cipassword: "{{ ci_password }}"
         ipconfig0: "ip=dhcp"
         storage: "{{ storage }}"
         net:
