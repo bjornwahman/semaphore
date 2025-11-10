@@ -10,11 +10,7 @@
     validate_certs: false
     
   tasks:
-    - name: Display which user is being used
-      debug:
-        msg: "Using Proxmox user: {{ proxmox_user }}"
-        
-    - name: Create Ubuntu VM by cloning template
+    - name: Clone template 105 to new VM
       community.general.proxmox_kvm:
         api_host: "{{ proxmox_host }}"
         api_user: "{{ proxmox_user }}"
@@ -22,16 +18,32 @@
         validate_certs: "{{ validate_certs }}"
         
         node: "pve"
-        name: "ubuntu-test-from-ansible"
         vmid: 9999
         clone: 105
+        name: "ubuntu-test-ansible"
         full: yes
-        memory: 2048
-        cores: 2
+        state: present  # <--- BYTT FRÅN "started" TILL "present"
+        
+      register: clone_result
+
+    - name: Display clone result
+      debug:
+        var: clone_result
+
+    - name: Start the cloned VM
+      community.general.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        validate_certs: "{{ validate_certs }}"
+        
+        node: "pve"
+        vmid: 9999
         state: started
         
-      register: vm_creation_result
+      register: start_result
+      when: clone_result is succeeded
 
-    - name: Display VM creation result
+    - name: Display start result
       debug:
-        var: vm_creation_result
+        var: start_result
