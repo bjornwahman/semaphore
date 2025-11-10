@@ -1,5 +1,5 @@
 ---
-- name: Create Ubuntu VM from template in Proxmox
+- name: Check if template 105 exists
   hosts: localhost
   connection: local
   gather_facts: false
@@ -10,40 +10,24 @@
     validate_certs: false
     
   tasks:
-    - name: Clone template 105 to new VM
+    - name: Get information about VM 105
       community.general.proxmox_kvm:
         api_host: "{{ proxmox_host }}"
         api_user: "{{ proxmox_user }}"
         api_password: "{{ proxmox_password }}"
         validate_certs: "{{ validate_certs }}"
-        
         node: "pve"
-        vmid: 9999
-        clone: 105
-        name: "ubuntu-test-ansible"
-        full: yes
-        state: present  # <--- BYTT FRÅN "started" TILL "present"
-        
-      register: clone_result
+        vmid: 105
+        state: current
+      register: vm_info
+      ignore_errors: yes
 
-    - name: Display clone result
+    - name: Display VM 105 info
       debug:
-        var: clone_result
+        var: vm_info
 
-    - name: Start the cloned VM
-      community.general.proxmox_kvm:
-        api_host: "{{ proxmox_host }}"
-        api_user: "{{ proxmox_user }}"
-        api_password: "{{ proxmox_password }}"
-        validate_certs: "{{ validate_certs }}"
-        
-        node: "pve"
-        vmid: 9999
-        state: started
-        
-      register: start_result
-      when: clone_result is succeeded
-
-    - name: Display start result
+    - name: Check template status
       debug:
-        var: start_result
+        msg: |
+          VM 105 exists: {{ vm_info is succeeded }}
+          Is template: {{ vm_info.template if vm_info is succeeded else 'Unknown' }}
