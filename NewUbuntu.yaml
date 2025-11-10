@@ -28,6 +28,4 @@
 
     - name: Check template status
       debug:
-        msg: |
-          VM 105 exists: {{ vm_info is succeeded }}
-          Is template: {{ vm_info.template if vm_info is succeeded else 'Unknown' }}
+        msg: "VM 105 exists: {{ vm_info is succeeded }}"
