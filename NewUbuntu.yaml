@@ -44,7 +44,7 @@
         full: true
         memory: "{{ memory_mb }}"
         cores: "{{ cores }}"
-        ipconfig0: "ip=dhcp"
+        ipconfig: "ip=dhcp"
         storage: "{{ storage }}"
         net:
           net0: "virtio,bridge={{ network_bridge }}"
