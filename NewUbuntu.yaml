@@ -4,25 +4,10 @@
   connection: local
   gather_facts: false
   vars:
-    # Proxmox connection settings - user comes from Semaphore
     proxmox_host: "{{ SEMAPHORE_PROXMOX_HOST }}" 
-    proxmox_user: "{{ SEMAPHORE_PROXMOX_USER }}"  # From Semaphore variable
+    proxmox_user: "{{ SEMAPHORE_PROXMOX_USER }}"
     proxmox_password: "{{ SEMAPHORE_PROXMOX_PASSWORD }}"
     validate_certs: false
-    
-    # VM configuration
-    vm_name: "ubuntu-vm-01"
-    vm_id: 9999
-    template_vm_id: 105
-    target_node: "pve"
-    
-    # Resource allocation
-    memory_mb: 2048
-    cores: 2
-    storage: "local-lvm"
-    
-    # Network
-    network_bridge: "vmbr0"
     
   tasks:
     - name: Display which user is being used
@@ -36,17 +21,13 @@
         api_password: "{{ proxmox_password }}"
         validate_certs: "{{ validate_certs }}"
         
-        node: "{{ target_node }}"
-        name: "{{ vm_name }}"
-        vmid: "{{ vm_id }}"
-        clone: "{{ template_vm_id }}"
-        full: true
-        memory: "{{ memory_mb }}"
-        cores: "{{ cores }}"
-        ipconfig: "ip=dhcp"
-        storage: "{{ storage }}"
-        net:
-          net0: "virtio,bridge={{ network_bridge }}"
+        node: "pve"
+        name: "ubuntu-test-from-ansible"
+        vmid: 9999
+        clone: 105
+        full: yes
+        memory: 2048
+        cores: 2
         state: started
         
       register: vm_creation_result
