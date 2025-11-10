@@ -1,0 +1,34 @@
+---
+- name: Create multiple Ubuntu VMs from inventory
+  hosts: ubuntu_vms
+  connection: local
+  gather_facts: false
+  
+  tasks:
+    - name: Display VM configuration
+      debug:
+        msg: "Creating {{ vm_name }} with ID {{ vm_id }}, {{ memory }}MB, {{ cores }} cores from template {{ template_id }}"
+
+    - name: Create VM from template
+      community.general.proxmox_kvm:
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        api_host: "{{ proxmox_host }}"
+        clone: "{{ template_id }}"  # <--- ANVÄNDER template_id VARIABELN
+        vmid: "{{ template_id }}"   # <--- SAMA HÄR
+        newid: "{{ vm_id }}"
+        full: yes
+        name: "{{ vm_name }}"
+        node: pve
+        storage: local-lvm
+        format: qcow2
+        memory: "{{ memory }}"
+        cores: "{{ cores }}"
+
+    - name: Start VM
+      community.general.proxmox_kvm:
+        api_user: "{{ proxmox_user }}"
+        api_password: "{{ proxmox_password }}"
+        api_host: "{{ proxmox_host }}"
+        vmid: "{{ vm_id }}"
+        state: started
